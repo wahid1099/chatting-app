@@ -10,44 +10,69 @@
             background-image: url("images/7868.jpg");
             background-size: cover;
         }
-        li{
-            list-style: none;
-            background: antiquewhite;
-            border-bottom: 2px solid red;
-            background-size: cover;
-            padding: 5px;
-            font-size: 20px;
-            width: 100%;
-        }
+.input{
+    width: 1156px;
+    background-color: red;
+    margin-left: 238px;
+}
+        /*.mghisdiv{*/
+
+        /*}*/
         .mghisdiv{
-            height: 320px;
-            overflow-y: scroll;
+            background-color: gray;
+            color: white;
+            font-size: 20px;
+
+            border-radius: 15px;
+            margin: 2px;
+            padding: 8px;
+            width: 30%;
+
+            /*overflow-y: auto;*/
+
+        }
+        .container{
+            max-width: 955px;
+            border: 2px solid black;
+            border-radius: 13px;
+            margin: auto;
+            height: 60vh;
+            padding: 33px;
+            overflow-y: auto;
+            margin-bottom: 23px;
+        }
+
+        .left{
+            float: left;
+            clear: both;
+        }
+        .right{
+            float: right;
+            clear: both;
+        }
+        .message h4 {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            color: #333;
+            font-size: 14px;
         }
     </style>
 </head>
 <body class="bg-secondary">
 <h1 class="text-center">Chatting App</h1>
-<div class="container py-4 shadow-lg bg-white">
-    <div class="row w-100 d-flex justify-content-center align-items-center">
-        <div class="col-md-6 col-12 col-lg-12 mghisdiv">
-            <ul id="msgHistory" class="list-group list-group-flush">
+<div class="container  bg-white mghisdiv">
 
-            </ul>
-        </div>
-
-    </div>
 </div>
 
-<div class="container p-3 shadow-sm bg-white">
-    <div class="row d-flex justify-content-center">
-        <div class="col-md-6 col-12 col-lg-6">
-           <div class="input-group">
-               <input id="msg" class="form-control" type="text">
-               <button onclick="sendmsg()" class="btn btn-primary">Send</button>
-           </div>
-        </div>
+<div class="input  shadow-sm bg-white">
 
-    </div>
+           <div class="input-group "
+           id="form">
+               <input id="msg" class="form-control" type="text">
+               <button onclick="sendmsg()" class="btn btn-primary ms-5">Send</button>
+           </div>
+
 </div>
 
 <h1 class="text-center text-white py-4">Copyright by Abdul wahid</h1>
@@ -55,11 +80,43 @@
 <script>
     // creating istance of socket
     let socket=io();
+    //getting ids
+    const messageContainer = document.querySelector(".mghisdiv")
+    //getting user name
+    // Ask new user for his/her name and let the server know
+    const name = prompt("Enter your name to join");
+    socket.emit('new-user-joined', name);
+    // Function which will append event info to the contaner
+    const append = (message, position)=>{
+        const messageElement = document.createElement('div');
+        messageElement.innerText = message;
+        messageElement.classList.add('mghisdiv');
+        messageElement.classList.add(position);
+        messageContainer.append(messageElement);
+
+    }
+    // If a new user joins, receive his/her name from the server
+    socket.on('user-joined', name =>{
+        append(`${name} joined the chat`, 'right')
+    })
+    // If server sends a message, receive it
+    socket.on('receive', data =>{
+        append(`${data.name}: ${data.message}`, 'left')
+    })
+    // If a user leaves the chat, append the info to the container
+    socket.on('left', name =>{
+        append(`${name} left the chat`, 'right')
+    })
+
     // btn onclick function
     function sendmsg (){
-        let msg=document.getElementById('msg').value;
+
+
+        let msgs=document.getElementById('msg').value;
         document.getElementById('msg').value="";
-        socket.emit('chat',msg);
+        append(`You: ${msgs}`, 'right');
+        socket.emit('chat',msgs);
+
     }
     // transfering caht history
     socket.on('chat_transfer',function (msg){
@@ -68,7 +125,9 @@
         let msgHis=document.getElementById('msgHistory');
         msgHis.appendChild(listitem);
 
+
     })
+
 </script>
 </body>
 </html>
